@@ -1,0 +1,17 @@
+# Ultralytics ByteTrack tracker settings
+
+tracker_type: bytetrack
+
+# Detection thresholds
+track_high_thresh: 0.5       # confidence threshold for keeping tracks
+track_low_thresh: 0.1        # confidence threshold for matching
+new_track_thresh: 0.7        # confidence threshold for new track creation
+
+# Tracking parameters
+track_buffer: 30             # number of frames to keep lost tracks
+match_thresh: 0.8            # IoU threshold for matching
+frame_rate: 60               # FPS of the video
+
+# Extra options (to avoid AttributeError)
+fuse_score: True             # whether to fuse detection score with IoU during matching
+mot20: False                 # special handling for MOT20 dataset (keep False for your case)
