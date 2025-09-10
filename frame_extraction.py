@@ -9,12 +9,12 @@ import pysrt
 # ============================
 # 1. Configs
 # ============================
-INPUT_FOLDER = r"InputFolder"        # folder for input videos
+INPUT_FOLDER = r"InputFolder"                                   # folder for input videos
 UNIQUE_DIR = r"outputFolder/unique_images"                      # folder for unique plants
-OUTPUT_VIDEO_DIR = r"outputFolder/video"                # folder for annotated videos
-CSV_PATH = r"detections.csv"         # detailed log
-COUNT_PATH = r"unique_count.txt"     # summary log
-TRACKER_CONFIG = "bytetrack.yaml"                                                                                 # tracker config file
+OUTPUT_VIDEO_DIR = r"outputFolder/video"                        # folder for annotated videos
+CSV_PATH = r"detections.csv"                                    # detailed log
+COUNT_PATH = r"unique_count.txt"                                # summary log
+TRACKER_CONFIG = "bytetrack.yaml"                               # tracker config file
 os.makedirs(OUTPUT_VIDEO_DIR, exist_ok=True)
 os.makedirs(UNIQUE_DIR, exist_ok=True)
 
@@ -54,6 +54,7 @@ def parse_srt(srt_path):
 # ============================
 video_files = [f for f in os.listdir(INPUT_FOLDER) if f.lower().endswith(('.mp4', '.avi', '.mov'))]
 seen_ids = set()
+saved_images = {} 
 
 with open(CSV_PATH, "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
@@ -120,18 +121,34 @@ with open(CSV_PATH, "w", newline="") as csvfile:
                         cv2.putText(frame, gps_label, (x1 + 3, y2 + gth + 5),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
 
-                    # Save first unique crop
-                    if track_id not in seen_ids:
-                        seen_ids.add(track_id)
-                        crop = frame[y1:y2, x1:x2]
-                        if lat is not None and lon is not None:
-                            # Include longitude and latitude in the filename
-                            img_path = os.path.join(UNIQUE_DIR, f"plant_{track_id}_lon_{lon}_lat_{lat}.jpg")
-                        else:
-                            img_path = os.path.join(UNIQUE_DIR, f"plant_{track_id}.jpg") # Fallback if GPS data is missing
-                        cv2.imwrite(img_path, crop)
+                    # Calculate current crop area
+                    current_area = (x2 - x1) * (y2 - y1)
+                    crop = frame[y1:y2, x1:x2]
+
+                    # Generate image path
+                    if lat is not None and lon is not None:
+                        img_path = os.path.join(UNIQUE_DIR, f"plant_{track_id}_lon_{lon}_lat_{lat}.jpg")
                     else:
-                        img_path = ""
+                        img_path = os.path.join(UNIQUE_DIR, f"plant_{track_id}.jpg")
+
+                    # Save logic: first time OR 15% larger area
+                    if track_id not in seen_ids:
+                        # First time seeing this tree
+                        seen_ids.add(track_id)
+                        cv2.imwrite(img_path, crop)
+                        saved_images[track_id] = {'area': current_area, 'path': img_path}
+                        print(f"New tree saved: ID {track_id}, area: {current_area}")
+                    elif current_area > saved_images[track_id]['area'] * 1.15:  # 15% larger
+                        # Current crop is 15% larger, replace old image
+                        old_path = saved_images[track_id]['path']
+                        if os.path.exists(old_path):
+                            os.remove(old_path)  # Delete old image
+                        cv2.imwrite(img_path, crop)
+                        saved_images[track_id] = {'area': current_area, 'path': img_path}
+                        print(f"Better image saved: ID {track_id}, new area: {current_area}, old area: {saved_images[track_id]['area']}")
+                        img_path = img_path  # Keep path for CSV
+                    else:
+                        img_path = ""  # No new image saved
 
                     # Log to CSV
                     writer.writerow([video_file, frame_num, track_id, x1, y1, x2, y2, lat, lon, img_path])
