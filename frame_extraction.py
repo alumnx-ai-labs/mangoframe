@@ -9,20 +9,20 @@ import pysrt
 # ============================
 # 1. Configs
 # ============================
-INPUT_FOLDER = r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/Drone Imagery 19th August"        # folder for input videos
-UNIQUE_DIR = r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/unique_images"                      # folder for unique plants
-OUTPUT_VIDEO_DIR = r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/output_videos"                # folder for annotated videos
-CSV_PATH = r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/unique_images/detections.csv"         # detailed log
-COUNT_PATH = r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/unique_images/unique_count.txt"     # summary log
+INPUT_FOLDER = r"InputFolder"        # folder for input videos
+UNIQUE_DIR = r"outputFolder/unique_images"                      # folder for unique plants
+OUTPUT_VIDEO_DIR = r"outputFolder/video"                # folder for annotated videos
+CSV_PATH = r"detections.csv"         # detailed log
+COUNT_PATH = r"unique_count.txt"     # summary log
 TRACKER_CONFIG = "bytetrack.yaml"                                                                                 # tracker config file
-os.makedirs(r"/content/drive/MyDrive/Data Science/Data/Mango Tree Classifier/output_videos", exist_ok=True)
+os.makedirs(OUTPUT_VIDEO_DIR, exist_ok=True)
 os.makedirs(UNIQUE_DIR, exist_ok=True)
 
 
 # ============================
 # 2. Load YOLO Model
 # ============================
-model = YOLO("/content/yolov11n_335th_epoch_patience_50_best_mAP50.pt")   # your trained mango model
+model = YOLO("yolov11n_335th_epoch_patience_50_best_mAP50.pt")   # your trained mango model
 
 # ============================
 # 3. Parse SRT Metadata (FIXED)
@@ -47,7 +47,7 @@ def parse_srt(srt_path):
 
     return gps_map
 
-gps_data = parse_srt(SRT_PATH)
+# gps_data = parse_srt(SRT_PATH)
 
 # ============================
 # 4. Process Multiple Videos
