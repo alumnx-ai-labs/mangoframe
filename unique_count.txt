@@ -1,1 +1,1 @@
-Total unique plants detected: 16
+Total unique plants detected: 4
