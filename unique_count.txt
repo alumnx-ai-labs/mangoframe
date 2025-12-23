@@ -1,3 +1,0 @@
-Total unique mangoTree detected: 27
-Total unique notMangoTree detected: 126
-Total unique objects detected: 153

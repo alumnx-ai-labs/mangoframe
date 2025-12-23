@@ -2,3 +2,4 @@ venv
 InputFolder/
 .vscode
 outputFolder/
+.vscode/
